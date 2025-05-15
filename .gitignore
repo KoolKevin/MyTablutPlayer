@@ -1,0 +1,19 @@
+# Build output
+/build/
+*.class
+
+# Eclipse
+/.classpath
+/.project
+/.settings/
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Logs and temp
+*.log
+*.tmp
+
+# Ant-specific
+ant-targets.tmp
