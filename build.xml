@@ -20,7 +20,8 @@
         </copy>
     </target>
 
-    <!-- Esecuzione del tuo player -->
+	
+    <!-- players -->
     <target name="myplayer">
         <java classname="it.unibo.ai.didattica.competition.tablut.myagent.MyTablutClient" fork="true">
             <classpath>
@@ -32,7 +33,6 @@
         </java>
     </target>
 
-    <!-- Creazione del JAR eseguibile del player -->
 	<target name="myplayer-jar" depends="compile">
 	    <jar destfile="MyTablutClient.jar" filesetmanifest="mergewithoutmain">
 	        <manifest>
@@ -44,4 +44,5 @@
 	        <zipfileset excludes="META-INF/*.SF" src="lib/aima-core-3.0.0.jar"/>
 	    </jar>
 	</target>
+	
 </project>

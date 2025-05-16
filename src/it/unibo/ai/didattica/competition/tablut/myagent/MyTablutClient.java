@@ -40,7 +40,7 @@ public class MyTablutClient extends TablutClient {
 		double utilMax = 1.0;
 		int timeout = this.getTimeout()-1;	// -1 per stare larghi e considerare il tempo di risposta
 		MyGame game = new MyGame(repeated, cacheSize);
-		MyAlphaBetaSearch search = new MyAlphaBetaSearch(game, utilMin, utilMax, timeout);
+		MyAlphaBetaSearch2 search = new MyAlphaBetaSearch2(game, utilMin, utilMax, timeout);
 		search.setLogEnabled(true);
 		
 		System.out.println("Ashton Tablut game");
@@ -134,13 +134,13 @@ public class MyTablutClient extends TablutClient {
 		String ipAddress = "localhost";
 		int timeout = 5;
 
-//		if (args.length < 1) {
-//			System.out.println("You must specify which player you are (WHITE or BLACK)");
-//			System.exit(-1);
-//		} else {
-//			System.out.println(args[0]);
-//			role = (args[0]);
-//		}
+		if (args.length < 1) {
+			System.out.println("You must specify which player you are (WHITE or BLACK)");
+			System.exit(-1);
+		} else {
+			System.out.println(args[0]);
+			role = args[0].toUpperCase();
+		}
 		if (args.length == 2) {
 			System.out.println(args[1]);
 			timeout = Integer.parseInt(args[1]);
@@ -148,7 +148,7 @@ public class MyTablutClient extends TablutClient {
 		if (args.length == 3) {
 			ipAddress = args[2];
 		}
-//		System.out.println("Selected client: " + args[0]);
+		System.out.println("Selected client: " + args[0]);
 
 		MyTablutClient client = new MyTablutClient(role, name, timeout, ipAddress);
 		client.run();
