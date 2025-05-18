@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.UnknownHostException;
 
 import it.unibo.ai.didattica.competition.tablut.domain.*;
+import it.unibo.ai.didattica.competition.tablut.domain.State.Pawn;
 import it.unibo.ai.didattica.competition.tablut.domain.State.Turn;
 
 
@@ -40,7 +41,7 @@ public class MyTablutClient extends TablutClient {
 		double utilMax = 1.0;
 		int timeout = this.getTimeout()-1;	// -1 per stare larghi e considerare il tempo di risposta
 		MyGame game = new MyGame(repeated, cacheSize);
-		MyAlphaBetaSearch2 search = new MyAlphaBetaSearch2(game, utilMin, utilMax, timeout);
+		MyAlphaBetaSearch3 search = new MyAlphaBetaSearch3(game, utilMin, utilMax, timeout);
 		search.setLogEnabled(true);
 		
 		System.out.println("Ashton Tablut game");
@@ -63,8 +64,24 @@ public class MyTablutClient extends TablutClient {
 				if (this.getCurrentState().getTurn().equals(StateTablut.Turn.WHITE)) {
 					// penso alla mia mossa
 					Action nextMove = search.makeDecision(state);
-					
 					System.out.println("Mossa scelta: " + nextMove.toString());
+					State nextState = null;
+					try {
+						nextState = game.applyValidMove(state, nextMove);
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					
+					// se qualcosa è stato catturato libero la cache dei pareggi
+					int numPedinePrima = this.getCurrentState().getNumberOf(Pawn.WHITE) + this.getCurrentState().getNumberOf(Pawn.BLACK);
+					int numPedineDopo = nextState.getNumberOf(Pawn.WHITE) + nextState.getNumberOf(Pawn.BLACK);
+					if (numPedineDopo < numPedinePrima)
+						game.getDrawConditions().clear();
+					// salvo lo stato relativo alla mossa scelta nella cache dei pareggi
+					game.getDrawConditions().add(nextState);
+					
+					// mando la mossa al server
 					try {
 						this.write(nextMove);
 					} catch (ClassNotFoundException | IOException e) {
@@ -129,26 +146,26 @@ public class MyTablutClient extends TablutClient {
 	
 	
 	public static void main(String[] args) throws UnknownHostException, IOException, ClassNotFoundException {
-		String role = "BLACK";
+		String role = "WHITE";
 		String name = "random";
 		String ipAddress = "localhost";
 		int timeout = 5;
-
-		if (args.length < 1) {
-			System.out.println("You must specify which player you are (WHITE or BLACK)");
-			System.exit(-1);
-		} else {
-			System.out.println(args[0]);
-			role = args[0].toUpperCase();
-		}
-		if (args.length == 2) {
-			System.out.println(args[1]);
-			timeout = Integer.parseInt(args[1]);
-		}
-		if (args.length == 3) {
-			ipAddress = args[2];
-		}
-		System.out.println("Selected client: " + args[0]);
+//
+//		if (args.length < 1) {
+//			System.out.println("You must specify which player you are (WHITE or BLACK)");
+//			System.exit(-1);
+//		} else {
+//			System.out.println(args[0]);
+//			role = args[0].toUpperCase();
+//		}
+//		if (args.length == 2) {
+//			System.out.println(args[1]);
+//			timeout = Integer.parseInt(args[1]);
+//		}
+//		if (args.length == 3) {
+//			ipAddress = args[2];
+//		}
+//		System.out.println("Selected client: " + args[0]);
 
 		MyTablutClient client = new MyTablutClient(role, name, timeout, ipAddress);
 		client.run();

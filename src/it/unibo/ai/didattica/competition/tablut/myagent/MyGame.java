@@ -23,11 +23,12 @@ import aima.core.search.adversarial.Game;
 public class MyGame implements Game<State, Action, Turn> {
 	// Number of repeated states that can occur before a draw
 	private int repeated_moves_allowed;
-	// Number of states kept in memory. negative value means infinite.
-	private int cache_size;
 	 // Counter for the moves without capturing that have occurred
 	private int movesWithutCapturing;
+	// Number of states kept in memory. negative value means infinite.
+	private int cache_size;
 	private List<State> drawConditions;
+	
 	private List<String> citadels;
 	
 	public MyGame(int repeated_moves_allowed, int cache_size) {
@@ -207,19 +208,18 @@ public class MyGame implements Game<State, Action, Turn> {
 		} else if (state.getTurn().equalsTurn("B")) {
 			state = this.checkCaptureWhite(state, a);
 		}
-		// if something has been captured, clear cache for draws
-		if (this.movesWithutCapturing == 0) {
-			this.drawConditions.clear();
-		}
+//		// if something has been captured, clear cache for draws
+//		if (this.movesWithutCapturing == 0) {
+//			this.drawConditions.clear();
+//		}
 		// controllo pareggio
 		int trovati = 0;
 		for (State s : drawConditions) {
 			if (s.equals(state)) {
-				// DEBUG: //
-				// System.out.println("UGUALI:");
-				// System.out.println("STATO VECCHIO:\t" + s.toLinearString());
-				// System.out.println("STATO NUOVO:\t" +
-				// state.toLinearString());
+				 // DEBUG: //
+//				 System.out.println("UGUALI:");
+//				 System.out.println("STATO VECCHIO:\n" + s +"\n");
+//				 System.out.println("STATO NUOVO:\n" + state +"\n");
 
 				trovati++;
 				if (trovati > repeated_moves_allowed) {
@@ -235,10 +235,10 @@ public class MyGame implements Game<State, Action, Turn> {
 			}
 		}
 
-		if (cache_size >= 0 && this.drawConditions.size() > cache_size) {
-			this.drawConditions.remove(0);
-		}
-		this.drawConditions.add(state.clone());
+//		if (cache_size >= 0 && this.drawConditions.size() > cache_size) {
+//			this.drawConditions.remove(0);
+//		}
+//		this.drawConditions.add(state.clone());
 
 		return state;
 	}
@@ -711,6 +711,11 @@ public class MyGame implements Game<State, Action, Turn> {
 
 	@Override
 	public State getResult(State stato, Action azione) {
+		// TODO: 
+		// attenzione questa funzione viene chiamata più volte all'interno
+		// del ciclo di iterative deepening dentro all'algoritmo alpha-beta.
+		// Devo aggiungere uno stato alla cache drawConditions solo quando 
+		// una mossa viene effettivamente scelta e non quando è esplorata
 		try {
 			stato = this.applyValidMove(stato, azione);
 		} catch (Exception e) {
@@ -751,7 +756,7 @@ public class MyGame implements Game<State, Action, Turn> {
 		else if(player.equalsTurn(Turn.BLACK.toString()) && stato.getTurn().equalsTurn(Turn.BLACKWIN.toString()))
 			utility = 1.0;
 		else if (stato.getTurn().equalsTurn(Turn.DRAW.toString()))
-			utility = 0.5;
+			utility = 0.3;
 		else
 			utility = 0.0;
 		
