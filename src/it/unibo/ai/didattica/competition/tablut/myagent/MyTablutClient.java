@@ -150,22 +150,22 @@ public class MyTablutClient extends TablutClient {
 		String name = "random";
 		String ipAddress = "localhost";
 		int timeout = 5;
-//
-//		if (args.length < 1) {
-//			System.out.println("You must specify which player you are (WHITE or BLACK)");
-//			System.exit(-1);
-//		} else {
-//			System.out.println(args[0]);
-//			role = args[0].toUpperCase();
-//		}
-//		if (args.length == 2) {
-//			System.out.println(args[1]);
-//			timeout = Integer.parseInt(args[1]);
-//		}
-//		if (args.length == 3) {
-//			ipAddress = args[2];
-//		}
-//		System.out.println("Selected client: " + args[0]);
+
+		if (args.length < 1) {
+			System.out.println("You must specify which player you are (WHITE or BLACK)");
+			System.exit(-1);
+		} else {
+			System.out.println(args[0]);
+			role = args[0].toUpperCase();
+		}
+		if (args.length == 2) {
+			System.out.println(args[1]);
+			timeout = Integer.parseInt(args[1]);
+		}
+		if (args.length == 3) {
+			ipAddress = args[2];
+		}
+		System.out.println("Selected client: " + args[0]);
 
 		MyTablutClient client = new MyTablutClient(role, name, timeout, ipAddress);
 		client.run();

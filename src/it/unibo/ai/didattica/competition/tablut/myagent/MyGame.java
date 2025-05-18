@@ -208,10 +208,20 @@ public class MyGame implements Game<State, Action, Turn> {
 		} else if (state.getTurn().equalsTurn("B")) {
 			state = this.checkCaptureWhite(state, a);
 		}
+		
+		
+		
+		
+		// logica commentata via dato che la gestione della cache di pareggio
+		// è compito del cliente che sceglie la mossa
 //		// if something has been captured, clear cache for draws
 //		if (this.movesWithutCapturing == 0) {
 //			this.drawConditions.clear();
 //		}
+		
+		
+		
+		
 		// controllo pareggio
 		int trovati = 0;
 		for (State s : drawConditions) {
@@ -235,10 +245,18 @@ public class MyGame implements Game<State, Action, Turn> {
 			}
 		}
 
+		
+		
+		
+		// logica commentata via dato che la gestione della cache di pareggio
+		// è compito del cliente che sceglie la mossa
 //		if (cache_size >= 0 && this.drawConditions.size() > cache_size) {
 //			this.drawConditions.remove(0);
 //		}
 //		this.drawConditions.add(state.clone());
+		
+		
+		
 
 		return state;
 	}
@@ -711,11 +729,6 @@ public class MyGame implements Game<State, Action, Turn> {
 
 	@Override
 	public State getResult(State stato, Action azione) {
-		// TODO: 
-		// attenzione questa funzione viene chiamata più volte all'interno
-		// del ciclo di iterative deepening dentro all'algoritmo alpha-beta.
-		// Devo aggiungere uno stato alla cache drawConditions solo quando 
-		// una mossa viene effettivamente scelta e non quando è esplorata
 		try {
 			stato = this.applyValidMove(stato, azione);
 		} catch (Exception e) {

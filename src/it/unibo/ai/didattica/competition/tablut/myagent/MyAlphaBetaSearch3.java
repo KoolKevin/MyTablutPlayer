@@ -1,7 +1,6 @@
 package it.unibo.ai.didattica.competition.tablut.myagent;
 
 
-import java.util.ArrayList;
 import java.util.List;
 
 import aima.core.search.adversarial.Game;
@@ -14,12 +13,9 @@ import it.unibo.ai.didattica.competition.tablut.domain.State.Turn;
 public class MyAlphaBetaSearch3 extends IterativeDeepeningAlphaBetaSearch<State, Action, Turn> {
 	
 	public static final int [][]fughe = {{0,1}, {0,2}, {0,6}, {0,7}, {1,0}, {1,8}, {2,0}, {2,8}, {6,0}, {6,8}, {7,0}, {7,8}, {8,1}, {8,2}, {8,6}, {8,7}};
-	public Timer timer;
-	private boolean heuristicEvaluationUsed; // indicates that non-terminal
 	
 	public MyAlphaBetaSearch3(Game<State, Action, Turn> game, double utilMin, double utilMax, int time) {
 		super(game, utilMin, utilMax, time);
-		this.timer = new Timer(time);
 	}
 	
 	
@@ -172,7 +168,7 @@ public class MyAlphaBetaSearch3 extends IterativeDeepeningAlphaBetaSearch<State,
 		
 		if(stato.getTurn().equalsTurn(Turn.WHITE.toString())) {
 			int nemici = stato.getNumberOf(Pawn.BLACK);
-			val = 1.01 - nemici/16.0; // 1.01 per rimanere sopra a utilMin e quindi non interrompere prematuramente
+			val = 1.01 - nemici/16.0;
 		}
 		else if(stato.getTurn().equalsTurn(Turn.BLACK.toString())) {
 			int nemici = stato.getNumberOf(Pawn.WHITE);
@@ -225,13 +221,9 @@ public class MyAlphaBetaSearch3 extends IterativeDeepeningAlphaBetaSearch<State,
 	public double eval(State stato, Turn player) {
 		double oldEval = super.eval(stato, player); // questo per side-effect
 		if (game.isTerminal(stato)) {
-			System.out.println(stato);
-			System.out.println("\t\tterminal");
 			return oldEval;
 		} 
 		
-		System.out.println("\t\teval chiamata "+ heuristicEvaluationUsed);
-		heuristicEvaluationUsed = true;
 		double stima = 0.0;
 		int[] re = getKingPosition(stato);
 		
@@ -250,167 +242,6 @@ public class MyAlphaBetaSearch3 extends IterativeDeepeningAlphaBetaSearch<State,
 		
 		return stima;
 	}
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	// Overrido roba per fare debug
-	@Override
-	public Action makeDecision(State state) {
-		StringBuffer logText = null;
-		Turn player = game.getPlayer(state);
-		List<Action> results = orderActions(state, game.getActions(state), player, 0);
-		
-		
-		timer.start();
-		currDepthLimit = 0;
-		do {
-			incrementDepthLimit();
-//			if (logEnabled)
-				logText = new StringBuffer("DEPTH " + currDepthLimit + ": \n");
-				
-			heuristicEvaluationUsed = false;
-			ActionStore<Action> newResults = new ActionStore<Action>();
-			for (Action action : results) {
-				double value = minValue(game.getResult(state, action), player, Double.NEGATIVE_INFINITY,
-						Double.POSITIVE_INFINITY, 1);
-				if (timer.timeOutOccured()) {
-					System.out.println("\n\nTIMEOUT MENRE STO VALUTANDO LE MOSSE\n\n");
-					break; // exit from action loop
-				}
-				newResults.add(action, value);
-//				if (logEnabled)
-					logText.append("\t"+action + "->" + value + "\n");
-			}
-//			if (logEnabled)
-				System.out.println(logText);
-			if (newResults.size() > 0) {
-				results = newResults.actions;
-				if (!timer.timeOutOccured()) {
-					if (hasSafeWinner(newResults.utilValues.get(0))) {
-						System.out.println("\n\nsafeWinner\n\n");
-						break; // exit from iterative deepening loop
-					}
-					else if (newResults.size() > 1 
-							&& isSignificantlyBetter(newResults.utilValues.get(0), newResults.utilValues.get(1))) {
-						System.out.println("\n\nsignificantly better\n\n");
-						break; // exit from iterative deepening loop
-					}
-				}
-			}
-		} while (!timer.timeOutOccured() /*&& heuristicEvaluationUsed*/);
-		
-
-		return results.get(0);
-	}
-	
-	// returns an utility value
-	@Override
-	public double maxValue(State state, Turn player, double alpha, double beta, int depth) {
-		if (game.isTerminal(state) || depth >= currDepthLimit || timer.timeOutOccured()) {
-			return eval(state, player);
-		} else {
-			double value = Double.NEGATIVE_INFINITY;
-			for (Action action : orderActions(state, game.getActions(state), player, depth)) {
-				value = Math.max(value, minValue(game.getResult(state, action), //
-						player, alpha, beta, depth + 1));
-				if (value >= beta)
-					return value;
-				alpha = Math.max(alpha, value);
-			}
-			return value;
-		}
-	}
-	
-	// returns an utility value
-	@Override
-	public double minValue(State state, Turn player, double alpha, double beta, int depth) {
-		if (game.isTerminal(state) || depth >= currDepthLimit || timer.timeOutOccured()) {
-			return eval(state, player);
-		} else {
-			double value = Double.POSITIVE_INFINITY;
-			for (Action action : orderActions(state, game.getActions(state), player, depth)) {
-				value = Math.min(value, maxValue(game.getResult(state, action), //
-						player, alpha, beta, depth + 1));
-				if (value <= alpha)
-					return value;
-				beta = Math.min(beta, value);
-			}
-			return value;
-		}
-	}
-
-	
-	@Override
-	protected boolean hasSafeWinner(double resultUtility) {
-		if(resultUtility <= utilMin || resultUtility >= utilMax) {
-			System.out.println("\n\n" + resultUtility + " è un safe winner!!!\n\n");
-			return true;
-		}
-		
-		return false;
-	}
-	
-	
-	private static class Timer {
-		private long duration;
-		private long startTime;
-
-		Timer(int maxSeconds) {
-			this.duration = 1000l * maxSeconds;
-		}
-
-		void start() {
-			startTime = System.currentTimeMillis();
-		}
-
-		boolean timeOutOccured() {
-			return System.currentTimeMillis() > startTime + duration;
-		}
-	}
-
-	/** Orders actions by utility. */
-	private static class ActionStore<ACTION> {
-		private List<ACTION> actions = new ArrayList<ACTION>();
-		private List<Double> utilValues = new ArrayList<Double>();
-
-		void add(ACTION action, double utilValue) {
-			int idx;
-			for (idx = 0; idx < actions.size() && utilValue <= utilValues.get(idx); idx++)
-				;
-			actions.add(idx, action);
-			utilValues.add(idx, utilValue);
-		}
-
-		int size() {
-			return actions.size();
-		}
-	}
-	
-	
-	
-	
-	
-	
-	
-	
-	
 	
 	
 	// main di test
