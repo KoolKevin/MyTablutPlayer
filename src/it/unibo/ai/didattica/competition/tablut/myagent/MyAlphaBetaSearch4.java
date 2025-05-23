@@ -10,11 +10,17 @@ import it.unibo.ai.didattica.competition.tablut.domain.State;
 import it.unibo.ai.didattica.competition.tablut.domain.State.Pawn;
 import it.unibo.ai.didattica.competition.tablut.domain.State.Turn;
 
-public class MyAlphaBetaSearch3 extends IterativeDeepeningAlphaBetaSearch<State, Action, Turn> {
+
+/*
+ * Strettamente peggiore della versione 3
+ * Il costo computazionale aggiuntivo della funzione di valutazione più complicata
+ * supera il guadagna che fa ottenere
+ */
+public class MyAlphaBetaSearch4 extends IterativeDeepeningAlphaBetaSearch<State, Action, Turn> {
 	
 	public static final int [][]fughe = {{0,1}, {0,2}, {0,6}, {0,7}, {1,0}, {1,8}, {2,0}, {2,8}, {6,0}, {6,8}, {7,0}, {7,8}, {8,1}, {8,2}, {8,6}, {8,7}};
 	
-	public MyAlphaBetaSearch3(Game<State, Action, Turn> game, double utilMin, double utilMax, int time) {
+	public MyAlphaBetaSearch4(Game<State, Action, Turn> game, double utilMin, double utilMax, int time) {
 		super(game, utilMin, utilMax, time);
 	}
 	
@@ -148,16 +154,45 @@ public class MyAlphaBetaSearch3 extends IterativeDeepeningAlphaBetaSearch<State,
 		return vie/2.0;
 	}
 	
+	public double evalLontananzaReMedia(State stato, int[] re) {
+		double somma_distanze = 0.0F;
+		int num_bianchi = 0;
+		
+		// scorro la scacchiera alla ricerca di pezzi bianchi
+		for (int i = 0; i < stato.getBoard().length; i++) {
+			for (int j = 0; j < stato.getBoard().length; j++) {
+				if (stato.getPawn(i, j).equalsPawn(State.Pawn.WHITE.toString())) {
+					num_bianchi++;
+					int distanzaRiga = re[0]-i;
+					int distanzaColonna = re[1]-j;
+					somma_distanze += Math.sqrt(distanzaRiga*distanzaRiga + distanzaColonna*distanzaColonna);
+				}
+			}
+		}
+		
+		double lontananza_media = somma_distanze / num_bianchi;
+		
+		// normalizzo:
+		// - lontananza minimia è quella di una pedina appiccicata su un lato del re
+		// 		distanzaRiga = 1 (o 1); distanzaColonna = 0 (o 1)
+		//		lontananzaMin = sqrt(1) = 1
+		// - lontananza massima si ottiene quando re e una pedina sono dalle parti opposte della scacchiera
+		// 		distanzaRiga = 7; distanzaColonna = 7; 
+		// 		lontananzaMax = sqrt(98) ~= 10
+		// 	- lontananza media varia tra [1 - 10]
+		return 1.0 - (lontananza_media-1)/9;
+	}
+	
 	public double evalNemici(State stato) {
 		double val = 0.0;
 		
 		if(stato.getTurn().equalsTurn(Turn.WHITE.toString())) {
 			int nemici = stato.getNumberOf(Pawn.BLACK);
-			val = 1.01 - nemici/16.0;
+			val = 1.0 - nemici/16.0;
 		}
 		else if(stato.getTurn().equalsTurn(Turn.BLACK.toString())) {
 			int nemici = stato.getNumberOf(Pawn.WHITE);
-			val = 1.01 - nemici/8.0;
+			val = 1.0 - nemici/8.0;
 		} 
 		
 		return val;
@@ -214,7 +249,7 @@ public class MyAlphaBetaSearch3 extends IterativeDeepeningAlphaBetaSearch<State,
 		
 		if(stato.getTurn().equalsTurn(Turn.WHITE.toString())) {
 //			// più il re è vicino alle case di fuga, meglio il nodo viene valutato
-			stima = evalNemici(stato)*0.3 + evalVieDiFuga(stato, re)*0.7;
+			stima = evalNemici(stato)*0.3 + evalLontananzaReMedia(stato, re)*0.05 + evalVieDiFuga(stato, re)*0.65;
 		}
 		else if(stato.getTurn().equalsTurn(Turn.BLACK.toString())) {
 			stima = evalNemici(stato)*0.5 + evalKingAttackingPawns(stato, re)*0.5;
@@ -235,7 +270,7 @@ public class MyAlphaBetaSearch3 extends IterativeDeepeningAlphaBetaSearch<State,
 		int cacheSize = -1;
 		MyGame game = new MyGame(repeated, cacheSize);
 		State stato = game.getInitialState();
-		MyAlphaBetaSearch3 search = new MyAlphaBetaSearch3(game, 0.0, 1.0, 60);
+		MyAlphaBetaSearch4 search = new MyAlphaBetaSearch4(game, -0.1, 1.1, 60);
 		
 		// faccio fare una mossa al nero dato che per qualche motivo parte lui nel costruttore base dello stato
 		List<Action> azioni =  game.getActions(stato);
@@ -243,7 +278,8 @@ public class MyAlphaBetaSearch3 extends IterativeDeepeningAlphaBetaSearch<State,
 		State newState = game.getResult(stato, azioni.get(10));
 		System.out.println(newState + "\n\n");
 		
-		
+		int[] re = search.getKingPosition(stato);
+		System.out.println("LONTANANZA MEDIA: " + search.evalLontananzaReMedia(stato, re));
 		
 		
 		
@@ -286,9 +322,9 @@ public class MyAlphaBetaSearch3 extends IterativeDeepeningAlphaBetaSearch<State,
 		
 		System.out.println(stato + "\n\n");
 		
-		int[] re = search.getKingPosition(stato);
+		re = search.getKingPosition(stato);
 		System.out.println("vieDiFuga: " + search.getVieDiFuga(stato, re) + "; normalizzata: " + search.evalVieDiFuga(stato, re));
 		
-		
+		System.out.println("LONTANANZA MEDIA: " + search.evalLontananzaReMedia(stato, re));
 	}
 }

@@ -41,7 +41,7 @@ public class MyTablutClient extends TablutClient {
 		double utilMax = 1.0;
 		int timeout = this.getTimeout()-1;	// -1 per stare larghi e considerare il tempo di risposta
 		MyGame game = new MyGame(repeated, cacheSize);
-		MyAlphaBetaSearch3 search = new MyAlphaBetaSearch3(game, utilMin, utilMax, timeout);
+		MyAlphaBetaSearch4 search = new MyAlphaBetaSearch4(game, utilMin, utilMax, timeout);
 		search.setLogEnabled(true);
 		
 		System.out.println("Ashton Tablut game");
