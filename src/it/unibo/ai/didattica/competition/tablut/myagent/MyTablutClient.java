@@ -158,11 +158,11 @@ public class MyTablutClient extends TablutClient {
 			System.out.println(args[0]);
 			role = args[0].toUpperCase();
 		}
-		if (args.length == 2) {
+		if (args.length >= 2) {
 			System.out.println(args[1]);
 			timeout = Integer.parseInt(args[1]);
 		}
-		if (args.length == 3) {
+		if (args.length >= 3) {
 			ipAddress = args[2];
 		}
 		System.out.println("Selected client: " + args[0]);
