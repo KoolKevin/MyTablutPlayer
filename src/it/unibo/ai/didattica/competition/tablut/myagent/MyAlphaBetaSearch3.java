@@ -1,6 +1,7 @@
 package it.unibo.ai.didattica.competition.tablut.myagent;
 
 
+import java.io.IOException;
 import java.util.List;
 
 import aima.core.search.adversarial.Game;
@@ -153,11 +154,11 @@ public class MyAlphaBetaSearch3 extends IterativeDeepeningAlphaBetaSearch<State,
 		
 		if(stato.getTurn().equalsTurn(Turn.WHITE.toString())) {
 			int nemici = stato.getNumberOf(Pawn.BLACK);
-			val = 1.01 - nemici/16.0;
+			val = 1.0 - nemici/16.0;
 		}
 		else if(stato.getTurn().equalsTurn(Turn.BLACK.toString())) {
 			int nemici = stato.getNumberOf(Pawn.WHITE);
-			val = 1.01 - nemici/8.0;
+			val = 1.0 - nemici/8.0;
 		} 
 		
 		return val;
@@ -224,8 +225,11 @@ public class MyAlphaBetaSearch3 extends IterativeDeepeningAlphaBetaSearch<State,
 			System.out.println(stato);
 			System.exit(-1);
 		}
-		
-		return stima;
+
+		if(stato.getTurn().equalsTurn(player.toString()) )
+			return stima;
+		else
+			return -stima;
 	}
 	
 	
@@ -235,60 +239,56 @@ public class MyAlphaBetaSearch3 extends IterativeDeepeningAlphaBetaSearch<State,
 		int cacheSize = -1;
 		MyGame game = new MyGame(repeated, cacheSize);
 		State stato = game.getInitialState();
-		MyAlphaBetaSearch3 search = new MyAlphaBetaSearch3(game, 0.0, 1.0, 60);
+		MyAlphaBetaSearch3 search = new MyAlphaBetaSearch3(game, -1.0, 1.0, 4);
+		search.setLogEnabled(true);
 		
-		// faccio fare una mossa al nero dato che per qualche motivo parte lui nel costruttore base dello stato
-		List<Action> azioni =  game.getActions(stato);
-		System.out.println("\n\n" + azioni.get(10));
-		State newState = game.getResult(stato, azioni.get(10));
-		System.out.println(newState + "\n\n");
-		
-		
-		
-		
-		
-	
-		
-		// controlliamo la valutazione delle vie di fuga
 		Pawn[][] board = new Pawn[9][9];
 		for (int i = 0; i < 9; i++) {
 			for (int j = 0; j < 9; j++) {
 				board[i][j] = Pawn.EMPTY;
 			}
 		}
-		board[4][4] = Pawn.THRONE;
-		board[3][3] = Pawn.KING;
-		board[2][4] = Pawn.WHITE;
-		board[3][4] = Pawn.WHITE;
-		board[5][4] = Pawn.WHITE;
-		board[6][4] = Pawn.WHITE;
-		board[4][2] = Pawn.WHITE;
-		board[4][3] = Pawn.WHITE;
-		board[4][5] = Pawn.WHITE;
-		board[4][6] = Pawn.WHITE;
 		board[0][3] = Pawn.BLACK;
 		board[0][4] = Pawn.BLACK;
 		board[0][5] = Pawn.BLACK;
-		board[1][4] = Pawn.BLACK;
-		board[8][3] = Pawn.BLACK;
-		board[8][4] = Pawn.BLACK;
-		board[8][5] = Pawn.BLACK;
-		board[7][4] = Pawn.BLACK;
-		board[3][0] = Pawn.BLACK;
-		board[4][0] = Pawn.BLACK;
-		board[5][0] = Pawn.BLACK;
-		board[4][1] = Pawn.BLACK;
+		board[1][2] = Pawn.BLACK;
+		board[1][6] = Pawn.WHITE;
+		board[3][4] = Pawn.BLACK;
 		board[3][8] = Pawn.BLACK;
-		board[4][8] = Pawn.BLACK;
-		board[5][8] = Pawn.BLACK;
+		board[4][0] = Pawn.BLACK;
+		board[4][3] = Pawn.BLACK;
+		board[4][4] = Pawn.KING;
+		board[4][5] = Pawn.WHITE;
 		board[4][7] = Pawn.BLACK;
+		board[4][8] = Pawn.BLACK;
+		board[5][4] = Pawn.BLACK;
+		board[6][5] = Pawn.BLACK;
+		board[7][4] = Pawn.BLACK;
+		board[8][4] = Pawn.BLACK;
 		stato.setBoard(board);
 		
 		System.out.println(stato + "\n\n");
-		
-		int[] re = search.getKingPosition(stato);
-		System.out.println("vieDiFuga: " + search.getVieDiFuga(stato, re) + "; normalizzata: " + search.evalVieDiFuga(stato, re));
+		System.out.println("eval: " + search.eval(stato, Turn.BLACK));
 		
 		
+		Action mossa = search.makeDecision(stato);
+		System.out.println(mossa);
+		
+		try {
+			mossa = new Action("h5", "g5", Turn.BLACK);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		try {
+			stato = game.applyValidMove(stato, mossa);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		System.out.println(stato + "\n\n");
+		System.out.println("eval: " + search.eval(stato, Turn.BLACK));
 	}
 }

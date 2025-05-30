@@ -769,9 +769,9 @@ public class MyGame implements Game<State, Action, Turn> {
 		else if(player.equalsTurn(Turn.BLACK.toString()) && stato.getTurn().equalsTurn(Turn.BLACKWIN.toString()))
 			utility = 1.0;
 		else if (stato.getTurn().equalsTurn(Turn.DRAW.toString()))
-			utility = 0.3;
+			utility = 0.0; 
 		else
-			utility = 0.0;
+			utility = -1.0;
 		
 		return utility;
 	}
